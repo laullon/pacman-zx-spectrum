@@ -1,6 +1,9 @@
 org $8000
 
-DrawMap:
+DrawATTRs:
+    ld a, 0             ; border blacl
+    out (0xfe), a    
+
     ld hl, $4000        ;pixels 
     ld de, $4001        ;pixels + 1
     ld bc, $17FF        ;pixels area length - 1
@@ -12,6 +15,7 @@ DrawMap:
 
 _loop:
     ld a, (hl)      ; next block on MAP
+    and $0f
     ld bc, ATTRS
 
     add a, c        ; bc = bc + a
@@ -28,16 +32,44 @@ _loop:
     cp $FF          ; last block on MAP?
     jp NZ, _loop
 
-DrawDots:
+DrawMaze:
     ld de, MAP
     ld bc, 0        ; 0 x 0
 _loop:
     ld a, (de)      ; next block on MAP
-    cp 1            ; dot ?
-    jr Z, _dot
-    cp 2                ; power dot
-    jr Z, _power
-    jr _next
+    cp 1            
+    jp Z, _dot
+    cp 2            
+    jp Z, _power
+    cp 4            
+    jp Z, _door
+    cp $10          
+    jp z, _w_left_t
+    cp $20
+    jp z, _w_vert
+    cp $30
+    jp z, _w_hori
+    cp $40
+    jp z, _w_t_d
+    cp $50
+    jp z, _w_right_top
+    cp $60
+    jp z, _w_end_l
+    cp $70
+    jp z, _w_end_r
+    cp $80
+    jp z, _w_end_b
+    cp $90
+    jp z, _w_left_b
+    cp $a0
+    jp z, _w_right_b
+    cp $b0
+    jp z, _w_t_r
+    cp $c0
+    jp z, _w_t_l
+    cp $d0
+    jp z, _w_t_t
+    jp _next
 
 _dot:
     call Get_Position_Address
@@ -47,7 +79,7 @@ _dot:
     ld (hl), %00011000
     inc h
     ld (hl), %00011000
-    jr _next
+    jp _next
 
 _power:
     call Get_Position_Address
@@ -60,13 +92,230 @@ _power:
     ld (hl), %00111100
     inc h
     ld (hl), %00011000
-    jr _next
+    jp _next
+
+_w_left_t:
+    call Get_Position_Address
+    inc h
+    inc h
+    ld (hl), %00011111
+    inc h
+    ld (hl), %00100000
+    inc h
+    ld (hl), %00100000
+    inc h
+    ld (hl), %00100011
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    jp _next
+
+_door:
+    call Get_Position_Address
+    inc h
+    inc h
+    inc h
+    ld (hl), %11111111
+    inc h
+    ld (hl), %11111111
+    jp _next
+
+_w_hori:
+    call Get_Position_Address
+    inc h
+    inc h
+    ld (hl), %11111111
+    inc h
+    ld (hl), %00000000
+    inc h
+    ld (hl), %00000000
+    inc h
+    ld (hl), %11111111
+    jp _next
+
+_w_vert:
+    call Get_Position_Address
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    jp _next
+
+_w_t_d:
+    call Get_Position_Address
+    inc h
+    inc h
+    ld (hl), %11111111
+    inc h
+    ld (hl), %00000000
+    inc h
+    ld (hl), %00000000
+    inc h
+    ld (hl), %11000011
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    jp _next
+
+_w_right_top:
+    call Get_Position_Address
+    inc h
+    inc h
+    ld (hl), %11111000
+    inc h
+    ld (hl), %00000100
+    inc h
+    ld (hl), %00000100
+    inc h
+    ld (hl), %11000100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    jp _next
+
+_w_end_l:
+    call Get_Position_Address
+    inc h
+    inc h
+    ld (hl), %00011111
+    inc h
+    ld (hl), %00100000
+    inc h
+    ld (hl), %00100000
+    inc h
+    ld (hl), %00011111
+    jp _next
+
+_w_end_r:
+    call Get_Position_Address
+    inc h
+    inc h
+    ld (hl), %11111000
+    inc h
+    ld (hl), %00000100
+    inc h
+    ld (hl), %00000100
+    inc h
+    ld (hl), %11111000
+    jp _next
+
+_w_end_b:
+    call Get_Position_Address
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00011000
+    jp _next
+
+_w_left_b:
+    call Get_Position_Address
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100011
+    inc h
+    ld (hl), %00100000
+    inc h
+    ld (hl), %00100000
+    inc h
+    ld (hl), %00011111
+    jp _next
+
+_w_right_b:
+    call Get_Position_Address
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %11000100
+    inc h
+    ld (hl), %00000100
+    inc h
+    ld (hl), %00000100
+    inc h
+    ld (hl), %11111000
+    jp _next
+
+_w_t_r:
+    call Get_Position_Address
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100011
+    inc h
+    ld (hl), %00100000
+    inc h
+    ld (hl), %00100000
+    inc h
+    ld (hl), %00100011
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    jp _next
+
+_w_t_l:
+    call Get_Position_Address
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %11100100
+    inc h
+    ld (hl), %00000100
+    inc h
+    ld (hl), %00000100
+    inc h
+    ld (hl), %11100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    jp _next
+
+_w_t_t:
+    call Get_Position_Address
+    ld (hl), %00100100
+    inc h
+    ld (hl), %00100100
+    inc h
+    ld (hl), %11000011
+    inc h
+    ld (hl), %00000000
+    inc h
+    ld (hl), %00000000
+    inc h
+    ld (hl), %11111111
+    jp _next
 
 _next:
     inc c
     ld a,c                  ; Col 32 ?
     cp 32
-    jr NZ, _same_row
+    jp NZ, _same_row
     ld c,0
     inc b
 _same_row:
@@ -78,7 +327,8 @@ _same_row:
 
 
 Fin:
-    jr Fin
+    halt
+    jp DrawMaze
 
 
 ; Get Position Address 
