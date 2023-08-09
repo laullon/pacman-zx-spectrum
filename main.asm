@@ -1,7 +1,8 @@
 org $8000
+    di
 
 DrawATTRs:
-    ld a, 0             ; border blacl
+    ld a, 0             ; border black
     out (0xfe), a    
 
     ld hl, $4000        ;pixels 
@@ -325,10 +326,34 @@ _same_row:
     jp NZ, _loop
 
 
+    jp GameLoop
 
-Fin:
-    halt
-    jp DrawMaze
+
+; Get Attr Address
+; Get Position Address 
+; b row
+; c col
+; ret hl
+Get_Attr_Address:
+    push bc
+    ld h, 0
+    ld l, b
+    sla l
+    rl h
+    sla l
+    rl h
+    sla l
+    rl h
+    sla l
+    rl h
+    sla l
+    rl h
+    ld b, 0
+    add hl, bc
+    ld bc, $5800
+    add hl, bc
+    pop bc
+    ret
 
 
 ; Get Position Address 
@@ -340,14 +365,14 @@ Get_Position_Address:
     push af
     push bc
     ld a, b
-    rla
-    rla
-    rla
+    sla a
+    sla a
+    sla a
     ld b, a
     ld a, c
-    rla
-    rla
-    rla
+    sla a
+    sla a
+    sla a
     ld c, a
     call Get_Pixel_Address
     pop bc
@@ -384,6 +409,8 @@ Get_Pixel_Address:
     OR L            ; OR with Y5,Y4,Y3
     LD L,A          ; Store in L
     RET
+
 include "mapa.asm"
+include "game.asm"
 
 end $8000
