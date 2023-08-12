@@ -1,5 +1,4 @@
 org $8000
-    di
 
 DrawATTRs:
     ld a, 0             ; border black
@@ -355,6 +354,32 @@ Get_Attr_Address:
     pop bc
     ret
 
+; Get Map Address
+; Get Position Address 
+; b row
+; c col
+; ret hl
+Get_Map_Address:
+    push bc
+    ld h, 0
+    ld l, b
+    sla l
+    rl h
+    sla l
+    rl h
+    sla l
+    rl h
+    sla l
+    rl h
+    sla l
+    rl h
+    ld b, 0
+    add hl, bc
+    ld bc, MAP
+    add hl, bc
+    pop bc
+    ret
+
 
 ; Get Position Address 
 ; b row
@@ -412,5 +437,6 @@ Get_Pixel_Address:
 
 include "mapa.asm"
 include "game.asm"
+include "render.asm"
 
 end $8000
