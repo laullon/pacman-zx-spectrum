@@ -18,42 +18,42 @@ GameLoop:
     jp nz, noUpdate
     ld (hl), 0
 
-    ;; RESTOREMap MAP
-    ld hl, pacman
+    ;; RESTORE MAP
+    ld ix, pacman
     ld iy, render_ent0
     call RestoreMap
 
-    ld hl, blinky
+    ld ix, blinky
     ld iy, render_ent1
     call RestoreMap
 
-    ld hl, pinky
+    ld ix, pinky
     ld iy, render_ent2
     call RestoreMap
 
-    ld hl, inky
+    ld ix, inky
     ld iy, render_ent3
     call RestoreMap
 
-    ld hl, clyde
+    ld ix, clyde
     ld iy, render_ent4
     call RestoreMap
 
-    ;; MOVE
-    ld hl, pacman
-    call Move
+    ; MOVE
+    ; ld hl, pacman
+    ; call Move
 
-    ld hl, blinky
-    call Move
+    ; ld hl, blinky
+    ; call Move
 
-    ld hl, pinky
-    call Move
+    ; ld hl, pinky
+    ; call Move
 
-    ld hl, inky
-    call Move
+    ; ld hl, inky
+    ; call Move
 
-    ld hl, clyde
-    call Move
+    ; ld hl, clyde
+    ; call Move
 
 
     ld a, 3
@@ -113,13 +113,41 @@ noUpdate:
 ; RestoreMap
 ; hl -> sprite
 RestoreMap:
-    ld b, (hl)      ; pos
-    inc hl
-    ld c, (hl)
+    ld b, (ix+0)            ; pos
+    ld c, (ix+1)
+
+    call Get_Position_Address
+    ld (iy+5), l
+    ld (iy+6), h
+
     call Get_Attr_Address
     ld (iy+0), l
     ld (iy+1), h
-    ld (iy+2), $46
+    ld (iy+4), $46
+
+    call Get_Map_Sprite
+    ld (iy+7), l
+    ld (iy+8), h
+
+    inc c
+
+    call Get_Position_Address
+    ld (iy+9), l
+    ld (iy+10), h
+
+    call Get_Attr_Address
+    ld (iy+2), l
+    ld (iy+3), h
+
+    call Get_Map_Sprite
+    ld (iy+11), l
+    ld (iy+12), h
+
+    ret
+
+; Get Map Sprite
+; hl -> sprite
+Get_Map_Sprite
     call Get_Map_Address
     ld a, (hl)
     cp 1            
@@ -131,33 +159,19 @@ RestoreMap:
     jp _done
 
 _dot:
-    call Get_Position_Address
-    ld (iy+3), l
-    ld (iy+4), h
     ld hl, dot
-    ld (iy+5), l
-    ld (iy+6), h
     jp _done
 
 _power:
-    call Get_Position_Address
-    ld (iy+3), l
-    ld (iy+4), h
     ld hl, power
-    ld (iy+5), l
-    ld (iy+6), h
     jp _done
 
 _empty:
-    call Get_Position_Address
-    ld (iy+3), l
-    ld (iy+4), h
     ld hl, empty
-    ld (iy+5), l
-    ld (iy+6), h
     jp _done
 
 _done
+
     ret
 
 ; Move
@@ -187,7 +201,8 @@ _zero
     ld (hl), 0
 _done
     ld a, (hl)
-    rlca            ; offset (x8)
+    rlca            ; offset (x16)
+    rlca
     rlca
     rlca
     inc hl
@@ -195,24 +210,39 @@ _done
     ret
 
 DrawSprite:
-    ld b, (ix+0)      ; pos
+    ld b, (ix+0)            ; pos
     ld c, (ix+1)
-    ld a, (ix+7)
     call Get_Attr_Address
     ld (iy+0), l
     ld (iy+1), h
-    ld (iy+2), a
+    call Get_Position_Address
+    ld (iy+5), l
+    ld (iy+6), h
+
+    inc bc
+
+    call Get_Attr_Address
+    ld (iy+2), l
+    ld (iy+3), h
+    call Get_Position_Address
+    ld (iy+9), l
+    ld (iy+10), h
+
+    ld a, (ix+7) 
+    ld (iy+4), a
 
     ld h, (ix+6)      ; 1st frame
     ld l, (ix+5)      
     ld e, (ix+4)      ; offset
     ld d, 0
     add hl, de
-    ld (iy+5), l
-    ld (iy+6), h
-    call Get_Position_Address
-    ld (iy+3), l
-    ld (iy+4), h
+    ld (iy+7), l
+    ld (iy+8), h
+    ld de, 8
+    add hl, de
+    ld (iy+11), l
+    ld (iy+12), h
+
 
     ret
 
