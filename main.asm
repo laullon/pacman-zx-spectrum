@@ -355,7 +355,6 @@ Get_Attr_Address:
     ret
 
 ; Get Map Address
-; Get Position Address 
 ; b row
 ; c col
 ; ret hl

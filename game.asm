@@ -1,3 +1,6 @@
+include "sprites.asm"
+include "keyboard.asm"
+
 frameCounter: db 0
 
 GameLoop:
@@ -5,6 +8,7 @@ GameLoop:
     out (0xfe), a
 
     call Render
+    call ReadKeyboard
 
     ld a, 2
     out (0xfe), a
@@ -18,13 +22,14 @@ GameLoop:
     jp nz, noUpdate
     ld (hl), 0
 
+;-- RESPTORE MAP --
 IRP sprite, pacman, blinky, pinky, inky, clyde
-    ;; RESTORE MAP
     ld ix, sprite
     ld iy, render_bck_##sprite
     call RestoreMapSprite
 endm
 
+;-- MOVE ---
 IRP sprite, pacman, blinky, pinky, inky, clyde
     ld a, (sprite + 3)
     cp 0
@@ -34,6 +39,7 @@ IRP sprite, pacman, blinky, pinky, inky, clyde
 notMove_##sprite
 endm
 
+;-- DRAW ---
 IRP sprite, pacman, blinky, pinky, inky, clyde
     ld ix, sprite
     ld iy, render_##sprite
@@ -45,9 +51,6 @@ IRP sprite, pacman, blinky, pinky, inky, clyde
     ld ix, sprite
     call NextFrameSprite
 endm
-
-    ld a, 3
-    out (0xfe), a
 
 noUpdate:
 
@@ -130,6 +133,7 @@ MoveSprite:
     ld a, (ix+S_target_col)
     ld (ix+S_col), a
 
+tryMove
     ld a, (ix+S_direction)
     cp D_right
     jp z, _right
@@ -142,54 +146,50 @@ MoveSprite:
     jp _done
 
 _right
-    ld a, (ix+S_target_col)
+    ld a, (ix+S_col)
     inc a
-    cp 30
-    jp nz, _contr
-    dec a
-    dec a
-    ld (ix+S_direction), D_left
-_contr
     ld (ix+S_target_col), a
     jp _done
 
 _left
-    ld a, (ix+S_target_col)
+    ld a, (ix+S_col)
     dec a
-    cp 0
-    jp nz, _contl
-    inc a
-    inc a
-    ld (ix+S_direction), D_right
-_contl
     ld (ix+S_target_col), a
     jp _done
 
 _up
-    ld a, (ix+S_target_row)
+    ld a, (ix+S_row)
     dec a
-    cp 0
-    jp nz, _contu
-    inc a
-    inc a
-    ld (ix+S_direction), D_down
-_contu
     ld (ix+S_target_row), a
     jp _done
 
 _down
-    ld a, (ix+S_target_row)
+    ld a, (ix+S_row)
     inc a
-    cp 24
-    jp nz, _contd
-    dec a
-    dec a
-    ld (ix+S_direction), D_up
-_contd
     ld (ix+S_target_row), a
     jp _done
 
 _done
+    ld b, (ix+S_target_row)     ; check if the new target is valid
+    ld c, (ix+S_target_col)
+    call Get_Map_Address
+    ld a, (hl)
+stop:
+    and $0f                     ; remove wall info ($x0 is a wall)
+    cp 0                        ; wall?
+    jp nz, _end                 ; no, valid move, end
+    ld a, (ix+S_direction)      ; yes, change direction
+    inc a
+    and 3
+    ld (ix+S_direction), a      ; new direction
+
+    ld a, (ix+S_row)            ; retore taget 
+    ld (ix+S_target_row), a
+    ld a, (ix+S_col)
+    ld (ix+S_target_col), a
+
+    jp tryMove                  ; move again
+_end
     ret
 
 
@@ -209,7 +209,6 @@ _zero
 _done
     ld a, (ix+S_a_frame)
     ld b, (ix+S_direction)
-stop
     sla a           ; offset x2
     sla b           ; direction x8
     sla b
@@ -262,6 +261,4 @@ DrawSprite:
 
     ret
 
-
-include "sprites.asm"
 

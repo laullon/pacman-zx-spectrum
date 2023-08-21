@@ -9,9 +9,10 @@ S_color: equ 7
 S_target_row: equ 8
 S_target_col: equ 9
 S_direction: equ 10
+S_nextdirection: equ 11
 
-D_right: equ 0
-D_left: equ 1
+D_left: equ 0
+D_right: equ 1
 D_up: equ 2
 D_down: equ 3
 
@@ -23,15 +24,17 @@ pacman:
     db $46                          ; color
     db 17, 16                       ; target row , color
     db D_right
+    db 0xff
 
 blinky:
-    db 4, 15
+    db 8, 15
     db 4,1
     db 0
     dw ghost_data
     db $42
-    db 4, 16
-    db D_left
+    db 8, 16
+    db D_right
+    db 0
 
 inky:
     db 10, 15
@@ -40,7 +43,8 @@ inky:
     dw ghost_data
     db $45
     db 10, 16
-    db D_up
+    db D_right
+    db 0
 
 pinky:
     db 10, 17
@@ -49,26 +53,28 @@ pinky:
     dw ghost_data
     db $43
     db 10, 18
-    db D_down
+    db D_right
+    db 0
 
 clyde:
     db 10, 13
     db 4,1
     db 0
-    dw pacman_data
+    dw ghost_data
     db $06
-    db 10, 14
-    db D_up
+    db 10, 12
+    db D_left
+    db 0
 
 pacman_data:
-    dw pacman_r_0, pacman_r_1, pacman_r_2, pacman_r_3
     dw pacman_l_0, pacman_l_1, pacman_l_2, pacman_l_3
+    dw pacman_r_0, pacman_r_1, pacman_r_2, pacman_r_3
     dw pacman_u_0, pacman_u_1, pacman_u_2, pacman_u_3
     dw pacman_d_0, pacman_d_1, pacman_d_2, pacman_d_3
 
 ghost_data:
-    dw ghost_r_0, ghost_r_1, ghost_r_2, ghost_r_3
     dw ghost_l_0, ghost_l_1, ghost_l_2, ghost_l_3
+    dw ghost_r_0, ghost_r_1, ghost_r_2, ghost_r_3
     dw ghost_u_0, ghost_u_1, ghost_u_2, ghost_u_3
     dw ghost_d_0, ghost_d_1, ghost_d_2, ghost_d_3
 
