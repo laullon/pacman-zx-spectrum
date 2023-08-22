@@ -1,5 +1,7 @@
 org $8000
 
+; DEBUG equ 0
+
 DrawATTRs:
     ld a, 0             ; border black
     out (0xfe), a    

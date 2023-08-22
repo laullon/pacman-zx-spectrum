@@ -15,6 +15,7 @@ D_left: equ 0
 D_right: equ 1
 D_up: equ 2
 D_down: equ 3
+D_stop: equ 4
 
 pacman:
     db 17, 15                       ; row , col
@@ -23,8 +24,8 @@ pacman:
     dw pacman_data                  ; 1st frame
     db $46                          ; color
     db 17, 16                       ; target row , color
+    db 5
     db D_right
-    db 0xff
 
 blinky:
     db 8, 15
@@ -33,8 +34,8 @@ blinky:
     dw ghost_data
     db $42
     db 8, 16
+    db 5
     db D_right
-    db 0
 
 inky:
     db 10, 15
@@ -43,8 +44,8 @@ inky:
     dw ghost_data
     db $45
     db 10, 16
+    db 5
     db D_right
-    db 0
 
 pinky:
     db 10, 17
@@ -53,8 +54,8 @@ pinky:
     dw ghost_data
     db $43
     db 10, 18
+    db 5
     db D_right
-    db 0
 
 clyde:
     db 10, 13
@@ -63,14 +64,15 @@ clyde:
     dw ghost_data
     db $06
     db 10, 12
+    db 5
     db D_left
-    db 0
 
 pacman_data:
     dw pacman_l_0, pacman_l_1, pacman_l_2, pacman_l_3
     dw pacman_r_0, pacman_r_1, pacman_r_2, pacman_r_3
     dw pacman_u_0, pacman_u_1, pacman_u_2, pacman_u_3
     dw pacman_d_0, pacman_d_1, pacman_d_2, pacman_d_3
+    dw pacman_r_0, pacman_r_0, pacman_r_0, pacman_r_0
 
 ghost_data:
     dw ghost_l_0, ghost_l_1, ghost_l_2, ghost_l_3

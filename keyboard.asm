@@ -1,6 +1,7 @@
-ReadKeyboard
-    ld ix, pacman
+KeyPressed: db 0xff
 
+ReadKeyboard
+    ld hl, KeyPressed
     ld bc, 0xdffe
     in a,(c)
     and 2
@@ -21,23 +22,23 @@ ReadKeyboard
     and 1
     jr z, _k_a_pressed
 
-    ld (ix+S_nextdirection), 0xff
+    ld (hl), 0xff
     jr _done
 
 _k_o_pressed
-    ld (ix+S_nextdirection), D_left
+    ld (hl), D_left
     jr _done
 
 _k_p_pressed
-    ld (ix+S_nextdirection), D_right
+    ld (hl), D_right
     jr _done
 
 _k_q_pressed
-    ld (ix+S_nextdirection), D_up
+    ld (hl), D_up
     jr _done
 
 _k_a_pressed
-    ld (ix+S_nextdirection), D_down
+    ld (hl), D_down
     jr _done
 
 _done
@@ -52,7 +53,7 @@ _done
     inc hl
 
     ld hl, $5800
-    ld a, (ix+S_nextdirection)
+    ld a, (KeyPressed)
     cp $FF
     jr z, _end
     ld b, 0

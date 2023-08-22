@@ -1,29 +1,40 @@
 include "sprites.asm"
 include "keyboard.asm"
+include "move.asm"
 
 frameCounter: db 0
 
 GameLoop:
+IFDEF DEBUG
     ld a, 1
     out (0xfe), a
+ENDIF
 
     call Render
     call ReadKeyboard
 
+IFDEF DEBUG
     ld a, 2
     out (0xfe), a
+ENDIF
+
+;-- CHECK NEXT DIRECTIONs
+    call checkNextDirectionPacman
+
+IRP sprite, blinky, pinky, inky, clyde
+    ld ix, sprite
+    call checkNextDirectionGhost
+endm
 
     ;; UPDATE next frame
-    ld hl, frameCounter
-    ld a, (hl)
-    inc a
-    ld (hl), a
-    cp 5
-    jp nz, noUpdate
-    ld (hl), 0
+    ld a, (frameCounter)
+    cp 0
+    jp z, frame_0
+    jp frameDone
 
+frame_0:
 ;-- RESPTORE MAP --
-IRP sprite, pacman, blinky, pinky, inky, clyde
+IRP sprite, blinky, pinky, inky, clyde, pacman
     ld ix, sprite
     ld iy, render_bck_##sprite
     call RestoreMapSprite
@@ -40,22 +51,26 @@ notMove_##sprite
 endm
 
 ;-- DRAW ---
-IRP sprite, pacman, blinky, pinky, inky, clyde
+IRP sprite, blinky, pinky, inky, clyde, pacman
     ld ix, sprite
     ld iy, render_##sprite
     call DrawSprite
 endm
 
 IRP sprite, pacman, blinky, pinky, inky, clyde
-    ;; RESTORE MAP
     ld ix, sprite
     call NextFrameSprite
 endm
 
-noUpdate:
-
-    ;;------
-
+frameDone:
+    ld hl, frameCounter
+    ld a, (hl)
+    inc a
+    ld (hl), a
+    cp 4
+    jp nz, _next
+    ld (hl), 0
+_next
     ld a, 0
     out (0xfe), a
     halt
@@ -133,7 +148,6 @@ MoveSprite:
     ld a, (ix+S_target_col)
     ld (ix+S_col), a
 
-tryMove
     ld a, (ix+S_direction)
     cp D_right
     jp z, _right
@@ -170,25 +184,6 @@ _down
     jp _done
 
 _done
-    ld b, (ix+S_target_row)     ; check if the new target is valid
-    ld c, (ix+S_target_col)
-    call Get_Map_Address
-    ld a, (hl)
-stop:
-    and $0f                     ; remove wall info ($x0 is a wall)
-    cp 0                        ; wall?
-    jp nz, _end                 ; no, valid move, end
-    ld a, (ix+S_direction)      ; yes, change direction
-    inc a
-    and 3
-    ld (ix+S_direction), a      ; new direction
-
-    ld a, (ix+S_row)            ; retore taget 
-    ld (ix+S_target_row), a
-    ld a, (ix+S_col)
-    ld (ix+S_target_col), a
-
-    jp tryMove                  ; move again
 _end
     ret
 
@@ -206,6 +201,8 @@ NextFrameSprite:
     jr _done
 _zero
     ld (ix+S_a_frame), 0
+    ld a,(ix+S_nextdirection)
+    ld (ix+S_direction), a
 _done
     ld a, (ix+S_a_frame)
     ld b, (ix+S_direction)
@@ -257,7 +254,6 @@ DrawSprite:
     add hl, bc
     ld (iy+11), l
     ld (iy+12), h
-
 
     ret
 
